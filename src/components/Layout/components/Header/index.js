@@ -1,12 +1,88 @@
 import classNames from 'classnames/bind';
+import { useEffect, useState } from 'react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import { faCircleXmark, faMagnifyingGlass, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faCircleXmark, faMagnifyingGlass, faSpinner , faEllipsisVertical, faEarthAsia, faCircleQuestion, faKeyboard, faCloudUpload, faMessage, faUser, faCoins, faGear, faSignOut} from '@fortawesome/free-solid-svg-icons';
+import Tippy from '@tippyjs/react';
+import HeadlessTippy from '@tippyjs/react/headless';
 
 import styles from '~/components/Layout/components/Header/Header.module.scss';
+import {Wrapper as WrapperPopper} from '~/components/Popper'
+import AccountItem from '~/components/AccountItem';
+import Button from '~/components/Button';
+import Menu from '~/components/Popper/Menu';
 
 const cx = classNames.bind(styles);
+const MENU_ITEMS = [
+    {
+        icon: <FontAwesomeIcon icon={faEarthAsia}/>,
+        title: 'English',
+        children: {
+            title: 'Language',
+            data: [
+                {
+                    type: 'language',
+                    code: 'en',
+                    title: 'English',
+                },
+                {
+                    type: 'language',
+                    code: 'vi',
+                    title: 'Tiếng Việt',
+                },
+            ]
+        }
+    },
+    {
+        icon: <FontAwesomeIcon icon={faCircleQuestion}/>,
+        title: 'Feedback and help',
+        to: '/feedback'
+    },
+    {
+        icon: <FontAwesomeIcon icon={faKeyboard}/>,
+        title: 'Keyboard shortcuts'
+    },
+];
 
 function Header() {
+    const [searchResult, setSearchResult] =  useState([]);
+    useEffect(() => {
+        setTimeout(() => {
+            setSearchResult([]);
+        }, 2000)
+    })
+
+    const handleMenuChange = (menuItem) => {
+        console.log(menuItem);
+    }
+    
+    const currentUser = true;
+
+    
+    const userMenu = [
+        {
+            icon: <FontAwesomeIcon icon={faUser}/>,
+            title: 'View profile',
+            to: '/alo'
+        },
+        {
+            icon: <FontAwesomeIcon icon={faCoins}/>,
+            title: 'Get coins',
+            to: '/coins'
+        },
+        {
+            icon: <FontAwesomeIcon icon={faGear}/>,
+            title: 'Setting',
+            to: '/setting'
+        },
+        ...MENU_ITEMS,
+        {
+            icon: <FontAwesomeIcon icon={faSignOut}/>,
+            title: 'Log out',
+            to: '/logout',
+            separate: true
+        },
+
+    ]
     return <header className={cx('wrapper')}>
         <div className={cx('inner')}>
             <div className={cx('logo')}>
@@ -21,20 +97,62 @@ function Header() {
                     <path fill="black" d="M91.58 28.887a3.94 3.94 0 0 1-3.94-3.945 3.94 3.94 0 1 1 7.882 0c0 2.18-1.77 3.945-3.942 3.945m0-12.058c-4.477 0-8.106 3.631-8.106 8.113s3.629 8.113 8.106 8.113 8.106-3.631 8.106-8.113-3.628-8.113-8.106-8.113"></path>
                 </svg>
             </div>
-            <div className={cx('search')}>
-                <input placeholder='Search here' spellcheck={false}/>
-                <button className={cx('clear')}>
-                    <FontAwesomeIcon icon={faCircleXmark} />
-                </button>
-                <FontAwesomeIcon className={cx('loading')} icon={faSpinner} />
-                <button className={cx('search-btn')}>
-                    <FontAwesomeIcon icon={faMagnifyingGlass} />
-                </button>
-            </div>
+            <HeadlessTippy 
+                interactive
+                visible={searchResult.length > 0}
+                render = {attrs => (
+                    <div className={cx('search-result')} tabIndex="-1" {...attrs}>
+                        <WrapperPopper>
+                            <h4 className={cx('search-title')}>
+                                Accounts
+                            </h4>
+                            <AccountItem/>
+                            <AccountItem/>
+                            <AccountItem/>
+                            <AccountItem/>
+                        </WrapperPopper>
+                    </div>
+                )}
+            >
+                <div className={cx('search')}>
+                    <input placeholder='Search here' spellcheck={false}/>                    
+                    <button className={cx('clear')}>
+                        <FontAwesomeIcon icon={faCircleXmark} />
+                    </button>
+                    <FontAwesomeIcon className={cx('loading')} icon={faSpinner} />
+                    <button className={cx('search-btn')}>
+                        <FontAwesomeIcon icon={faMagnifyingGlass} />
+                    </button>
+                </div>
+            </HeadlessTippy>
             <div className={cx('actions')}>
-                <button>Upload</button>
-                <button>Login</button>
+                {currentUser ? (
+                    <>
+                        <Tippy content="Upload video" placement='bottom'>
+                            <button className={cx('action-btn')}>
+                                <FontAwesomeIcon icon={faCloudUpload} />
+                            </button>
+                        </Tippy>
+                    </>
+                ) : (
+                    
+                    <>
+                        <Button text>Upload</Button>
+                        <Button primary>Log in</Button>
+                    </>
+                )}
+                 <Menu onChange={handleMenuChange} items={currentUser ? userMenu : MENU_ITEMS}>
+                    {currentUser ? (
+                        <img src="https://yt3.ggpht.com/ytc/AIdro_kt-sUf4kFDrZ4iaFcyK4EHwVz-jlvQBwjZSA6hQ9ogPEg=s48-c-k-c0x00ffffff-no-rj" className={cx('user-avatar')} alt="Nguyen"/>
+                    ) : (
+                     <button className={cx('more-btn')}>
+                         <FontAwesomeIcon icon={faEllipsisVertical} />
+                     </button>
+                    )}
+                 </Menu>
+                            
             </div>
+                
         </div>
     </header>
 }
